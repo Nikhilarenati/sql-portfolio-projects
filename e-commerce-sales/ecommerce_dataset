@@ -1,0 +1,142 @@
+Overview – E-Commerce Sales Analysis
+Objective
+
+You’ve joined an e-commerce startup as a data analyst. Your manager wants key business insights from the sales dataset to optimize operations. Let’s dive in.
+
+
+
+Dataset
+
+You can download the dataset from Kaggle:
+
+https://www.kaggle.com/datasets/carrie1/ecommerce-data
+
+
+You’ll analyze:
+
+
+
+Orders per month
+
+Revenue trends
+
+Top-selling products
+
+High-value customers
+
+Geographical insights
+
+INSTRUCTIONS:
+MySQL Setup Instructions
+0) Download data from kaggle
+
+Open kaggle link in previous article(Overview) and click on download --> 'Download dataset as zip' --> Unzip file
+
+
+
+Execute below commands in mysql workbench
+
+
+
+1) Create database & table
+
+
+
+CREATE DATABASE IF NOT EXISTS ecommerce;
+
+USE ecommerce;
+
+
+
+DROP TABLE IF EXISTS sales_data;
+
+CREATE TABLE sales_data (
+
+    InvoiceNo   VARCHAR(20),
+
+    StockCode   VARCHAR(20),
+
+    Description VARCHAR(200),
+
+    Quantity    INT,
+
+    InvoiceDate VARCHAR(25),
+
+    UnitPrice   FLOAT,
+
+    CustomerID  VARCHAR(20),
+
+    Country     VARCHAR(100)
+
+);
+
+
+
+
+
+2) Find the mysql server upload folder
+
+
+
+SHOW VARIABLES LIKE 'secure_file_priv';
+
+
+
+* If it shows a path (e.g., `C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/`),
+
+go to that path in file explorer & create portfolio1 folder inside Uploads folder
+
+and copy downloaded *data.csv* into that folder
+
+
+
+
+
+3) load csv into table :
+
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/portfolio1/data.csv'
+
+INTO TABLE sales_data
+
+CHARACTER SET latin1
+
+FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+
+IGNORE 1 LINES
+
+(InvoiceNo, StockCode, @Description, Quantity, @InvoiceDate, @UnitPrice, @CustomerID, Country)
+
+SET
+
+  Description = NULLIF(CONVERT(TRIM(@Description) USING utf8mb4), ''),
+
+  UnitPrice   = NULLIF(@UnitPrice, ''),
+
+  CustomerID  = NULLIF(@CustomerID, ''),
+
+  InvoiceDate = COALESCE(
+
+                  STR_TO_DATE(TRIM(@InvoiceDate), '%m/%d/%Y %H:%i:%s'),
+
+                  STR_TO_DATE(TRIM(@InvoiceDate), '%m/%d/%Y %H:%i')
+
+                );
+
+
+
+
+
+4) Cast the date column
+
+ALTER TABLE sales_data MODIFY InvoiceDate DATETIME NULL;
+
+
+
+5) Quick sanity checks
+
+-- total rows
+
+SELECT COUNT(*) FROM sales_data;
+
